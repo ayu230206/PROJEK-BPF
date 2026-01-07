@@ -1,51 +1,53 @@
 @extends('admin.layout.app')
 
 @section('body')
+    
+    {{-- WRAPPER UTAMA: Mendorong konten ke bawah FIXED Navbar --}}
+    <div class="body-padding-for-fixed-navbar d-flex flex-column min-vh-100">
 
-    {{-- 1. Navbar (Fixed Top) --}}
-    @include('partials._navbar', ['userRole' => 'Admin'])
+        {{-- 1. Navbar (Fixed Top) --}}
+        @include('partials._navbar', ['userRole' => 'Admin'])
 
-    {{-- 2. Sidebar (Fixed Left) --}}
-    @include('admin.layout._sidebar')
+        {{-- 2. Sidebar (Fixed Left) --}}
+        @include('admin.layout._sidebar')
 
-    {{-- 3. Area Konten Utama --}}
-    {{-- 
-        - content-shifted: Mengaktifkan margin-left 260px di desktop.
-        - padding-top: 90px: Jarak aman dari Navbar fixed.
-    --}}
-    <main class="flex-grow-1 p-5 content-shifted konten-utama-bpdpks" style="padding-top: 90px; min-height: 100vh;">
-        
-        <div class="konten-sebenarnya container-fluid p-4">
+        {{-- 3. Area Konten Utama --}}
+        <main class="flex-grow-1 p-5 content-shifted konten-utama-bpdpks" style="min-height: 100vh;">
+            {{-- Catatan: padding-top: 90px sudah dipindahkan ke body-padding-for-fixed-navbar --}}
             
-            {{-- Flash Messages (Notifikasi Sukses/Gagal) --}}
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-check-circle me-2 fs-4"></i>
-                        <div>{{ session('success') }}</div>
+            <div class="konten-sebenarnya container-fluid p-4">
+                
+                {{-- Flash Messages (Notifikasi Sukses/Gagal) --}}
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle me-2 fs-4"></i>
+                            <div>{{ session('success') }}</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+                @endif
 
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-triangle me-2 fs-4"></i>
-                        <div>{{ session('error') }}</div>
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-2 fs-4"></i>
+                            <div>{{ session('error') }}</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+                @endif
+                
+                {{-- Konten Halaman Dinamis --}}
+                @yield('content')
+                
+            </div>
             
-            {{-- Konten Halaman Dinamis --}}
-            @yield('content')
-            
-        </div>
+            {{-- Memanggil Footer di sini (opsional, tergantung preferensi) --}}
+            {{-- Jika menggunakan komponen footer.blade.php yang baru, pastikan ia memiliki class content-shifted --}}
 
-        {{-- Footer - Dipanggil di sini karena tidak perlu diletakkan di dalam container/flex wrapper --}}
-        {{-- Footer tetap muncul di posisi paling bawah setelah konten habis --}}
+        </main>
         
-    </main>
+    </div>
 
 @endsection

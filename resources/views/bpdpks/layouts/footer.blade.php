@@ -1,9 +1,11 @@
 <footer style="
-    background-color: #212529;
-    color: #dee2e6;
+    /* Perubahan di sini: Mengubah latar belakang menjadi Putih dan menyesuaikan warna teks */
+    background-color: #ffffff; 
+    color: #495057; /* Warna teks utama menjadi abu-abu gelap */
     padding: 15px 30px;
     font-family: Arial, sans-serif;
     font-size: 0.9rem;
+    border-top: 1px solid #e9ecef; /* Tambahkan garis batas atas tipis */
 ">
     <div style="
         max-width: 1200px;
@@ -19,11 +21,12 @@
             min-width: 250px;
             margin-bottom: 5px;
             font-size: 0.9rem;
-            color: #adb5bd;
+            color: #6c757d; /* Warna teks biasa menjadi abu-abu sedang */
         ">
-            <strong style="color: #ffffff;">BPDPKS — Beasiswa Sawit</strong>
+            <strong style="color: #212529;">BPDPKS — Beasiswa Sawit</strong>
             <span style="margin-left: 20px;">|</span>
-            <span style="font-size: 0.8rem; margin-left: 20px;">&copy; {{ date('Y') }} BPDPKS. Hak Cipta Dilindungi.</span>
+            <span style="font-size: 0.8rem; margin-left: 20px;">&copy; {{ date('Y') }} BPDPKS. Hak Cipta
+                Dilindungi.</span>
         </div>
 
         <div style="
@@ -32,9 +35,10 @@
             margin-bottom: 5px;
             font-size: 0.85rem;
         ">
-            <a href="#" style="color: #adb5bd; text-decoration: none; margin-left: 15px;">Kebijakan Privasi</a>
-            <span style="color: #495057; margin-left: 15px;">|</span>
-            <a href="#" style="color: #adb5bd; text-decoration: none; margin-left: 15px;">Kontak Kami di bpdpks@gmail.com</a>
+            <a href="#" style="color: #6c757d; text-decoration: none; margin-left: 15px;">Kebijakan Privasi</a>
+            <span style="color: #ced4da; margin-left: 15px;">|</span>
+            <a href="#" style="color: #6c757d; text-decoration: none; margin-left: 15px;">Kontak Kami di
+                bpdpks@gmail.com</a>
         </div>
     </div>
 </footer>

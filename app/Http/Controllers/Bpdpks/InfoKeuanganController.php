@@ -13,12 +13,12 @@ class InfoKeuanganController extends Controller
 {
     public function index(Request $request)
     {
-        // Start building the query
+
         $query = Keuangan::with([
-            'mahasiswa' => function($q) {
+            'mahasiswa' => function ($q) {
                 $q->select('id', 'nama_lengkap');
-            }, 
-            'mahasiswa.detail.kampus:id,nama_kampus' // PERBAIKAN: Menggunakan 'id' dari tabel kampus
+            },
+            'mahasiswa.detail.kampus:id,nama_kampus'
         ]);
 
         // 1. FILTER BERDASARKAN STATUS
@@ -39,25 +39,25 @@ class InfoKeuanganController extends Controller
                 // Cari di nama mahasiswa
                 $q->where('nama_lengkap', 'like', '%' . $searchTerm . '%');
             })
-            ->orWhereHas('mahasiswa.detail', function ($q) use ($searchTerm) {
-                // Cari di NIM
-                $q->where('nim', 'like', '%' . $searchTerm . '%');
-            })
-            ->orWhereHas('mahasiswa.detail.kampus', function ($q) use ($searchTerm) {
-                // Cari di nama kampus
-                $q->where('nama_kampus', 'like', '%' . $searchTerm . '%');
-            });
+                ->orWhereHas('mahasiswa.detail', function ($q) use ($searchTerm) {
+                    // Cari di NIM
+                    $q->where('nim', 'like', '%' . $searchTerm . '%');
+                })
+                ->orWhereHas('mahasiswa.detail.kampus', function ($q) use ($searchTerm) {
+                    // Cari di nama kampus
+                    $q->where('nama_kampus', 'like', '%' . $searchTerm . '%');
+                });
         }
 
         // Jalankan query dan pagination
-        $dataKeuangan = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString(); 
+        $dataKeuangan = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
         return view('bpdpks.infokeuangan.index', compact('dataKeuangan'));
     }
 
     public function create()
     {
-        $mahasiswas = User::where('role', 'mahasiswa')->select('id', 'nama_lengkap')->get(); 
+        $mahasiswas = User::where('role', 'mahasiswa')->select('id', 'nama_lengkap')->get();
         return view('bpdpks.infokeuangan.create', compact('mahasiswas'));
     }
 
@@ -70,7 +70,8 @@ class InfoKeuanganController extends Controller
             'jumlah_bulanan' => 'required|numeric|min:0',
             'jumlah_buku' => 'nullable|numeric|min:0',
             'status_pencairan' => 'required|in:proses,ditransfer,diterima,ditangguhkan',
-            'bukti_transfer' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048',
+            // Perbaikan Validasi File: Menggunakan 'sometimes'
+            'bukti_transfer' => 'sometimes|file|mimes:pdf,jpg,jpeg,png|max:5048',
         ]);
 
         $pathBukti = null;
@@ -78,6 +79,7 @@ class InfoKeuanganController extends Controller
             $pathBukti = $request->file('bukti_transfer')->store('keuangan/bukti_transfer', 'public');
         }
 
+        // PERBAIKAN SINTAKS: Mengganti kurung kurawal ({}) menjadi kurung siku ([]) untuk array
         Keuangan::create([
             'mahasiswa_id' => $request->mahasiswa_id,
             'semester' => $request->semester,
@@ -91,7 +93,7 @@ class InfoKeuanganController extends Controller
         ]);
 
         return redirect()->route('bpdpks.keuangan.index')
-                         ->with('success', 'Data Keuangan baru berhasil ditambahkan.');
+            ->with('success', 'Data Keuangan baru berhasil ditambahkan.');
     }
 
     public function edit($id)
@@ -104,7 +106,7 @@ class InfoKeuanganController extends Controller
     public function update(Request $request, $id)
     {
         $keuangan = Keuangan::findOrFail($id);
-        
+
         $request->validate([
             'mahasiswa_id' => 'required|exists:users,id',
             'semester' => 'required|string|max:50',
@@ -112,15 +114,19 @@ class InfoKeuanganController extends Controller
             'jumlah_bulanan' => 'required|numeric|min:0',
             'jumlah_buku' => 'nullable|numeric|min:0',
             'status_pencairan' => 'required|in:proses,ditransfer,diterima,ditangguhkan',
-            'bukti_transfer' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048',
+            // Perbaikan Validasi File: Menggunakan 'sometimes'
+            // Ini memastikan validasi file hanya terjadi jika ada file yang di-upload
+            'bukti_transfer' => 'sometimes|file|mimes:pdf,jpg,jpeg,png|max:5048',
         ]);
 
         $data = $request->except(['_token', '_method', 'bukti_transfer']);
 
         if ($request->hasFile('bukti_transfer')) {
             if ($keuangan->path_bukti_transfer) {
+                // Hapus file lama jika ada
                 Storage::disk('public')->delete($keuangan->path_bukti_transfer);
             }
+            // Simpan file baru
             $pathBukti = $request->file('bukti_transfer')->store('keuangan/bukti_transfer', 'public');
             $data['path_bukti_transfer'] = $pathBukti;
         }
@@ -128,20 +134,20 @@ class InfoKeuanganController extends Controller
         $keuangan->update($data);
 
         return redirect()->route('bpdpks.keuangan.index')
-                         ->with('success', 'Data Keuangan berhasil diperbarui.');
+            ->with('success', 'Data Keuangan berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
         $keuangan = Keuangan::findOrFail($id);
-        
+
         if ($keuangan->path_bukti_transfer) {
             Storage::disk('public')->delete($keuangan->path_bukti_transfer);
         }
 
         $keuangan->delete();
-        
+
         return redirect()->route('bpdpks.keuangan.index')
-                         ->with('success', 'Data Keuangan berhasil dihapus.');
+            ->with('success', 'Data Keuangan berhasil dihapus.');
     }
 }

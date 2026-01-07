@@ -2,61 +2,59 @@
 
 @section('content')
 <div class="header">
-        <h1 class="welcome"><i class="fas fa-plus me-2"></i> Tambah Lowongan / Magang Baru</h1>
-    </div>
+    <h1 class="welcome"><i class="fas fa-plus me-2"></i> Tambah Lowongan / Magang Baru</h1>
+</div>
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+<div class="card-custom">
+    {{-- WAJIB: enctype="multipart/form-data" untuk upload file --}}
+    <form action="{{ route('admin.lowongan.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Tipe Iklan <span class="text-danger">*</span></label>
+                <select class="form-control" name="tipe" required>
+                    <option value="magang">Magang</option>
+                    <option value="lowongan_kerja">Lowongan Kerja</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Batas Akhir Pendaftaran</label>
+                <input type="date" class="form-control" name="deadline" required>
+            </div>
         </div>
-    @endif
 
-    <div class="card-custom">
-        <form action="{{ route('admin.lowongan.store') }}" method="POST">
-            @csrf
+        <div class="mb-3">
+            <label class="form-label">Judul Lowongan/Posisi <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="judul" placeholder="Contoh: Staff IT / Magang Web Dev" required>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="tipe" class="form-label">Tipe Iklan <span class="text-danger">*</span></label>
-                    <select class="form-control" id="tipe" name="tipe" required>
-                        <option value="magang" {{ old('tipe') == 'magang' ? 'selected' : '' }}>Magang</option>
-                        <option value="lowongan_kerja" {{ old('tipe') == 'lowongan_kerja' ? 'selected' : '' }}>Lowongan Kerja</option>
-                    </select>
-                    @error('tipe')<div class="text-danger">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="deadline" class="form-label">Batas Akhir Pendaftaran</label>
-                    <input type="date" class="form-control" id="deadline" name="deadline" value="{{ old('deadline') }}">
-                    @error('deadline')<div class="text-danger">{{ $message }}</div>@enderror
-                </div>
-            </div>
+        {{-- Input Upload Gambar/Dokumen --}}
+        <div class="mb-3">
+            <label class="form-label fw-bold text-primary">Upload Banner / Poster / Dokumen (Opsional)</label>
+            <input type="file" class="form-control" name="file_pendukung" accept=".jpg,.jpeg,.png,.pdf">
+            <small class="text-muted">Format: JPG, PNG, PDF. Maksimal 2MB. File akan tersimpan di public/uploads.</small>
+        </div>
 
-            <div class="mb-3">
-                <label for="judul" class="form-label">Judul Lowongan/Posisi <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="judul" name="judul" value="{{ old('judul') }}" required>
-                @error('judul')<div class="text-danger">{{ $message }}</div>@enderror
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Deskripsi Pekerjaan</label>
+            <textarea class="form-control" name="deskripsi" rows="5" required></textarea>
+        </div>
 
-            <div class="mb-3">
-                <label for="deskripsi" class="form-label">Deskripsi Pekerjaan/Magang</label>
-                <textarea class="form-control" id="deskripsi" name="deskripsi" rows="5">{{ old('deskripsi') }}</textarea>
-                @error('deskripsi')<div class="text-danger">{{ $message }}</div>@enderror
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Kualifikasi/Persyaratan</label>
+            <textarea class="form-control" name="kualifikasi" rows="5"></textarea>
+        </div>
 
-            <div class="mb-3">
-                <label for="kualifikasi" class="form-label">Kualifikasi/Persyaratan</label>
-                <textarea class="form-control" id="kualifikasi" name="kualifikasi" rows="5">{{ old('kualifikasi') }}</textarea>
-                <small class="text-muted">Gunakan bullet point atau list untuk keterbacaan yang lebih baik.</small>
-                @error('kualifikasi')<div class="text-danger">{{ $message }}</div>@enderror
-            </div>
-
-            <hr>
-            <button type="submit" class="btn btn-primary" style="background-color: var(--primary); border-color: var(--primary);"><i class="fas fa-save me-1"></i> Simpan Lowongan</button>
+        <hr>
+        
+        {{-- TOMBOL KIRIM YANG DIPERBAIKI --}}
+        <div class="d-flex justify-content-end gap-2">
             <a href="{{ route('admin.lowongan.index') }}" class="btn btn-secondary">Batal</a>
-        </form>
-    </div>
+            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                <i class="fas fa-paper-plane me-2"></i> KIRIM & TERBITKAN
+            </button>
+        </div>
+    </form>
+</div>
 @endsection

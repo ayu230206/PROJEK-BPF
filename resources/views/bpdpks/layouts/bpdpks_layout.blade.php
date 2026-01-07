@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
@@ -10,7 +11,7 @@
 
     <!-- DATATABLE -->
     <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
-
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- FONTAWESOME -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
@@ -42,7 +43,7 @@
             background: var(--sidebar-bg);
             border-right: 1px solid #e9ecef;
             padding: 25px 18px;
-            box-shadow: 4px 0 14px rgba(0,0,0,0.06);
+            box-shadow: 4px 0 14px rgba(0, 0, 0, 0.06);
             z-index: 100;
         }
 
@@ -59,7 +60,7 @@
             border-radius: 18px;
             padding: 25px;
             border: 1px solid #ececec;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
             transition: 0.3s;
         }
 
@@ -68,7 +69,8 @@
         }
 
         /* FIX ICON OVERFLOW */
-        i.fas, i.fa {
+        i.fas,
+        i.fa {
             transform: none !important;
             position: unset !important;
         }
@@ -102,4 +104,5 @@
     @yield('scripts')
 
 </body>
+
 </html>

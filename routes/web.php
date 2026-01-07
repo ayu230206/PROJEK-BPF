@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\AdminRegisUlangController;
 use App\Http\Controllers\Admin\DataBeasiswaController;
 use App\Http\Controllers\Admin\PenelitianLombaController;
 use App\Http\Controllers\AuthController;
+
+
 // ============================================
 // BPDPKS Controllers (Imported via 'as BpdpksFeedbackController')
 // ============================================
@@ -23,6 +25,8 @@ use App\Http\Controllers\Bpdpks\InfoKeuanganController;
 use App\Http\Controllers\Bpdpks\KampusKerjasamaController;
 use App\Http\Controllers\Bpdpks\LowonganController;
 use App\Http\Controllers\Mahasiswa\InfoLombaController;
+
+
 // ============================================
 // MAHASISWA Controllers (Imported via 'as MahasiswaFeedbackController' etc.)
 // ============================================
@@ -55,7 +59,6 @@ Route::get('/', function () {
         if ($role == 'mahasiswa') {
             // Redirect ke dashboard Mahasiswa (URL: /mahasiswa/dashboard)
             return redirect()->route('mahasiswa.dashboard');
-
         } elseif ($role == 'bpdpks') {
             // Redirect ke dashboard BPDPKS (URL: /bpdpks/dashboard)
             return redirect()->route('bpdpks.dashboard');
@@ -157,10 +160,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/upload', [MahasiswaAkademikController::class, 'uploadDokumen'])->name('upload');
             Route::delete('/dokumen/{dokumen}', [MahasiswaAkademikController::class, 'destroyDokumen'])->name('dokumen.destroy');
             Route::get('/ipk', [MahasiswaAkademikController::class, 'ipk'])
-            ->name('ipk');
-
+                ->name('ipk');
         });
-        
+
         // FEEDBACK MAHASISWA
         Route::prefix('feedback')->name('feedback.')->group(function () {
             Route::get('/', [MahasiswaFeedbackController::class, 'index'])->name('index');
@@ -175,52 +177,46 @@ Route::middleware(['auth'])->group(function () {
 
     //info lomba dan penelitian
     Route::prefix('mahasiswa')->middleware(['auth'])->group(function () {
-    Route::get('/info-lomba', [InfoLombaController::class, 'index'])->name('mahasiswa.info-lomba');
-    Route::get('/penelitian', [PenelitianController::class, 'index'])
-        ->name('mahasiswa.penelitian');
-    });    
+        Route::get('/info-lomba', [InfoLombaController::class, 'index'])->name('mahasiswa.info-lomba');
+        Route::get('/penelitian', [PenelitianController::class, 'index'])
+            ->name('mahasiswa.penelitian');
+    });
 
     // Rute default /dashboard dialihkan ke /mahasiswa/dashboard, jika autentikasi berhasil
     Route::redirect('/dashboard', '/mahasiswa/dashboard');
-
 }); // END: Grup Prefix Mahasiswa
+
+
 
 // ============================================
 // 3. ROUTES BPDPKS (Menggunakan satu blok yang benar)
 // ============================================
-// Menggunakan alias string jika sudah didaftarkan di bootstrap/app.php
 Route::middleware(['bpdpks'])
     ->prefix('bpdpks')
     ->name('bpdpks.')
     ->group(function () {
 
-        // 1. Dashboard (URL: /bpdpks/dashboard, Name: bpdpks.dashboard)
+        // 1. Dashboard 
         Route::get('/dashboard', [DataMahasiswaController::class, 'dashboard'])->name('dashboard');
-
-        // 2. Data Mahasiswa (URL: /bpdpks/data-mahasiswa, Name: bpdpks.datamahasiswa.index)
-        // Rute terpisah untuk index/list data mahasiswa agar resource di bawah tidak menimpanya
+        // Data Mhs
         Route::get('/data-mahasiswa', [DataMahasiswaController::class, 'index'])->name('datamahasiswa.index');
-
         // Route API untuk chart
         Route::get('/chart-data-api', [DataMahasiswaController::class, 'getChartDataApi'])->name('chartdata.api');
-
-        // Resource Keuangan, Kerjasama, Lowongan
+        // Resource Keuangan
         Route::resource('keuangan', InfoKeuanganController::class)->except(['show']);
+        // Kerjasama
         Route::resource('kerjasama', KampusKerjasamaController::class)->except(['show']);
+        //Lowongan
         Route::resource('lowongan', LowonganController::class);
-
         // Monitoring dan Proses Aplikasi Lowongan
         Route::get('lowongan/{lowongan}/aplikasi', [LowonganController::class, 'monitoringAplikasi'])->name('lowongan.monitoring');
         Route::post('lowongan/aplikasi/{aplikasidata}/proses', [LowonganController::class, 'prosesAplikasi'])->name('lowongan.proses_aplikasi');
-
-        // Resource Data Mahasiswa (Hanya Show, karena Index sudah di atas)
-        // URL: /bpdpks/datamahasiswa/{datamahasiswa}, Name: bpdpks.datamahasiswa.show
-        Route::resource('datamahasiswa', DataMahasiswaController::class)->only(['show']);
-
-        // Resource Feedback
+        Route::get('lowongan/aplikasi/{aplikasi}', [LowonganController::class, 'detailAplikasi'])->name('lowongan.aplikasi.show');
+        //  Feedback
         Route::resource('feedback', BpdpksFeedbackController::class)->only(['index', 'show']);
     });
-// END: Grup Prefix BPDPKS
+    
+
 
 // ============================================
 // 4. ROUTES KHUSUS ADMIN (FULL CONTROL)
@@ -314,5 +310,7 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
     // 9. Notifikasi dan Pengumuman - Menggunakan AdminNotifikasiController
     Route::resource('notifikasi-pengumuman', AdminNotifikasiController::class)->names('notifikasi');
 
+    Route::get('/forum', [\App\Http\Controllers\Admin\AdminForumController::class, 'index'])->name('forum.index');
+    Route::delete('/forum/{id}', [\App\Http\Controllers\Admin\AdminForumController::class, 'destroy'])->name('forum.destroy');
 });
 // END: Grup Prefix Admin

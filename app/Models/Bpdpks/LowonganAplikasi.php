@@ -14,9 +14,11 @@ class LowonganAplikasi extends Model
     protected $table = 'lowongan_aplikasi';
 
     protected $fillable = [
-        'lowongan_id', 
-        'mahasiswa_id', 
-        'status', 
+        'lowongan_id',
+        'mahasiswa_id',
+        'cv',
+        'portofolio',
+        'status',
         'catatan_admin'
     ];
 

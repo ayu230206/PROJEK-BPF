@@ -5,7 +5,7 @@
 @section('content')
     <header class="mb-8 flex justify-between items-center">
         <h1 class="text-3xl font-extrabold text-sawit-utama">
-            Selamat Datang, {{ $adminName }}
+            Selamat Datang Admin
         </h1>
         <div class="flex items-center space-x-4">
             <span class="text-sm text-gray-600 hidden sm:inline">Administrator Panel</span>

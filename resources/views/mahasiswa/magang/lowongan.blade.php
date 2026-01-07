@@ -24,14 +24,9 @@
 
 
     {{-- ======================== --}}
-    {{-- 2 BUTTON BARU DI TAMBAHKAN --}}
+    {{-- BUTTON RIWAYAT PENGAJUAN --}}
     {{-- ======================== --}}
     <div class="flex gap-4 mb-8">
-        <a href="{{ route('mahasiswa.magang.ajukan') }}" 
-            class="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-2xl shadow-lg font-semibold transition duration-150">
-            📄 Ajukan Pengajuan Magang
-        </a>
-
         <a href="{{ route('mahasiswa.magang.index') }}" 
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl shadow-lg font-semibold transition duration-150">
             📘 Riwayat Pengajuan Magang
@@ -57,8 +52,17 @@
                     $isApplied = in_array($item->id, $appliedLowonganIds);
                 @endphp
                 <div class="bg-white rounded-lg shadow-xl hover:shadow-2xl transition duration-300 border @if($isApplied) border-green-500 @else border-gray-200 @endif p-6">
+                    
+                    {{-- START: Tambahan untuk FOTO Lowongan di Halaman Daftar --}}
+                    @if($item->foto)
+                        <div class="mb-4">
+                            <img src="{{ asset('storage/' . $item->foto) }}" alt="Foto Lowongan" class="rounded-lg shadow w-full h-32 object-cover">
+                        </div>
+                    @endif
+                    {{-- END: Tambahan untuk FOTO Lowongan di Halaman Daftar --}}
+
                     <h2 class="text-xl font-bold text-gray-900 mb-2">{{ $item->judul }}</h2>
-                    <div class="flex items-center text-sm text-gray-600 mb-4">
+                    <div class="flex items-center text-sm text-gray-600 mb-2">
                         <i class="fas fa-clock mr-2"></i> 
                         @if ($item->deadline)
                             Deadline: <span class="font-medium text-red-600 ml-1">{{ \Carbon\Carbon::parse($item->deadline)->format('d M Y') }}</span>
@@ -66,6 +70,16 @@
                             <span class="font-medium">Tidak Ada Deadline</span>
                         @endif
                     </div>
+
+                    {{-- START: Tambahan untuk FILE PENDUKUNG di Halaman Daftar --}}
+                    @if($item->file_pendukung)
+                        <div class="mb-4">
+                            <a href="{{ asset('storage/' . $item->file_pendukung) }}" target="_blank" class="text-blue-700 text-sm font-semibold underline flex items-center">
+                                <i class="fas fa-file-pdf mr-1"></i> Download File Persyaratan
+                            </a>
+                        </div>
+                    @endif
+                    {{-- END: Tambahan untuk FILE PENDUKUNG di Halaman Daftar --}}
                     
                     <p class="text-gray-700 mb-4 line-clamp-3">
                         {{ Str::limit(strip_tags($item->deskripsi), 150, '...') }}

@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models\Bpdpks;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User; // Perlu di-import
@@ -12,12 +14,24 @@ class Lowongan extends Model
     protected $table = 'magang_lowongan';
 
     protected $fillable = [
-        'tipe', 
-        'judul', 
-        'deskripsi', 
-        'kualifikasi', 
-        'deadline', 
-        'diinput_oleh_id'
+        'tipe',
+        'judul',
+        'deskripsi',
+        'kualifikasi',
+        'deadline',
+        'diinput_oleh_id',
+
+
+        // 🔥 KOLOM BARU DITAMBAHKAN UNTUK MASSA ASSIGNMENT
+        'foto',
+        'file_pendukung',
+        'lokasi',
+        'gaji',
+        'tanggal_mulai',
+        'tanggal_selesai',
+
+        'file_path'
+
     ];
 
     /**

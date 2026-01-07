@@ -3,25 +3,22 @@
 namespace App\Http\Controllers\Bpdpks;
 
 use App\Http\Controllers\Controller;
-use App\Models\MahasiswaDetail; 
-use App\Models\Bpdpks\Kampus; 
+use App\Models\MahasiswaDetail;
+use App\Models\Bpdpks\Kampus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DataMahasiswaController extends Controller
 {
-    /**
-     * Mengambil data chart (grafik) berdasarkan filter kampus.
-     */
     private function getChartData(int $kampusId = null)
     {
         $queryMahasiswa = MahasiswaDetail::query();
 
-        // Terapkan filter jika kampusId diberikan (dan bukan 0/semua)
+
         if ($kampusId) {
             $queryMahasiswa->where('kampus_id', $kampusId);
         }
-        
+
         // 1. Data Rata-rata IPK per Kampus (untuk Bar Chart)
         $avgIpkPerKampus = (clone $queryMahasiswa)
             ->select('kampus_id', DB::raw('AVG(ipk) as avg_ipk'))
@@ -32,45 +29,43 @@ class DataMahasiswaController extends Controller
         $barLabels = $avgIpkPerKampus->map(fn($item) => $item->kampus->nama_kampus ?? 'Unknown')->toArray();
         $barData = $avgIpkPerKampus->map(fn($item) => number_format((float)$item->avg_ipk, 2, '.', ''))->toArray();
 
-        // 2. Data Distribusi IPK (untuk Donut Chart)
+        // Data Distribusi IPK (untuk Donut Chart)
         $totalMahasiswa = (clone $queryMahasiswa)->count();
         $countExcellent = (clone $queryMahasiswa)->where('ipk', '>=', 3.80)->count();
         $countGood = (clone $queryMahasiswa)->where('ipk', '>=', 3.50)->where('ipk', '<', 3.80)->count();
         // Hitung Needs Attention dari total dikurangi Excellent dan Good
         $countAttention = $totalMahasiswa - $countExcellent - $countGood;
-        
+
         $donutData = [
             'excellent' => $countExcellent,
             'good' => $countGood,
             'attention' => $countAttention,
         ];
-        
+
         // Card data (hanya total recipients yang dinamis berdasarkan filter)
         $activeCampuses = Kampus::where('status_kerjasama', 'aktif')->count();
-        
+
         return [
             'barLabels' => $barLabels,
             'barData' => $barData,
-            'donutData' => array_values($donutData), 
-            'totalRecipients' => $totalMahasiswa, // Total Mahasiswa (sesuai filter)
-            'activeCampuses' => $activeCampuses, // Card ini tidak difilter
+            'donutData' => array_values($donutData),
+            'totalRecipients' => $totalMahasiswa,
+            'activeCampuses' => $activeCampuses,
             'donutLabels' => ['Excellent (≥ 3.8)', 'Good (3.5 – 3.79)', 'Needs Attention (< 3.5)'],
         ];
     }
-    
-    /**
-     * Menampilkan Dashboard utama dengan data statis & grafik awal.
-     */
+
+
     public function dashboard()
     {
         // Ambil data untuk inisialisasi awal grafik (Semua Kampus)
         $chartData = $this->getChartData(null);
-        
+
         // Ambil semua kampus untuk dropdown filter
         $allKampus = Kampus::orderBy('nama_kampus')->get();
 
         $pendingApprovals = 6; // Contoh data dummy
-        
+
         return view('bpdpks.dashboard', compact('chartData', 'pendingApprovals', 'allKampus'));
     }
 
@@ -80,7 +75,7 @@ class DataMahasiswaController extends Controller
     public function getChartDataApi(Request $request)
     {
         $kampusId = $request->input('kampus_id', null);
-        
+
         // Jika ID adalah 'all' atau tidak ada, set null agar getChartData mengambil semua data
         if ($kampusId === 'all') {
             $kampusId = null;
@@ -91,12 +86,7 @@ class DataMahasiswaController extends Controller
         return response()->json($data);
     }
 
-    // ... Metode index dan show tetap sama
-    // ...
 
-    /**
-     * Menampilkan dashboard OLAP Data Mahasiswa dan daftar detail.
-     */
     public function index(Request $request)
     {
         // Mendapatkan data untuk tabel detail
@@ -119,28 +109,19 @@ class DataMahasiswaController extends Controller
         }
 
         // Ambil data dengan pagination
-        $dataMahasiswa = $query->latest()->paginate(10); 
-        
-        // Ambil semua kampus untuk filter
+        $dataMahasiswa = $query->latest()->paginate(10);
+
+        //  semua kampus untuk filter
         $allKampus = Kampus::orderBy('nama_kampus')->get();
 
         return view('bpdpks.datamahasiswa.index', compact('dataMahasiswa', 'allKampus'));
     }
 
-    /**
-     * Menampilkan detail Mahasiswa (OLAP - View Detail)
-     * Menggunakan Route Model Binding, memastikan MahasiswaDetail diambil dari ID di URL.
-     */
-    // Perbaikan 2: Pastikan MahasiswaDetail di sini juga menggunakan model dari namespace yang benar
+
     public function show(MahasiswaDetail $mahasiswa)
     {
-        // Pastikan relasi user dan kampus di-load
-        $mahasiswa->load(['user', 'kampus']);
-        
-        // Jika Anda ingin menampilkan riwayat keuangan
-        // Pastikan model User memiliki relasi ke Keuangan (misal: hasMany(\App\Models\Keuangan::class))
-        // $riwayatKeuangan = $mahasiswa->user->keuangan; 
 
+        $mahasiswa->load(['user', 'kampus']);
         return view('bpdpks.datamahasiswa.show', compact('mahasiswa'));
     }
 }

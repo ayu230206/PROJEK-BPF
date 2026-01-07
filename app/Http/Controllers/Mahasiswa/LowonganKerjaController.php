@@ -3,40 +3,62 @@
 namespace App\Http\Controllers\Mahasiswa;
 
 use App\Http\Controllers\Controller;
-use App\Models\Mahasiswa\LowonganKerja;
-use App\Models\Mahasiswa\Lamaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+// GANTI: Model lama mahasiswa dihapus
+// use App\Models\Mahasiswa\LowonganKerja;
+// use App\Models\Mahasiswa\Lamaran;
+
+// PAKAI MODEL DARI BPDPKS
+use App\Models\Bpdpks\Lowongan; 
+use App\Models\Bpdpks\LowonganAplikasi;
+
 class LowonganKerjaController extends Controller
 {
-    // Daftar lowongan dengan search + pagination
+    // Daftar lowongan kerja (search + pagination)
     public function index(Request $request)
     {
-        $query = LowonganKerja::query();
+        $query = Lowongan::where('tipe', 'lowongan_kerja')
+                         ->orderBy('deadline', 'desc');
 
-        // Jika ada keyword search
-        if ($request->has('search') && $request->search != '') {
+        // Jika ada search
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('judul', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
                   ->orWhere('perusahaan', 'like', "%{$search}%")
                   ->orWhere('lokasi', 'like', "%{$search}%");
+            });
         }
 
-        // Order terbaru dan paginate 9 per halaman
-        $lowongans = $query->orderBy('tanggal_post', 'desc')->paginate(9);
+        $lowongans = $query->paginate(9);
 
-        return view('mahasiswa.lowongankerja.index', compact('lowongans'));
+        // Cek lowongan yang sudah dilamar
+        $appliedLowonganIds = LowonganAplikasi::where('mahasiswa_id', Auth::id())
+                                              ->pluck('lowongan_id')
+                                              ->toArray();
+
+        return view('mahasiswa.lowongankerja.index',
+            compact('lowongans', 'appliedLowonganIds')
+        );
     }
 
-    // Detail lowongan + form lamaran
+    // Detail lowongan
     public function show($id)
     {
-        $lowongan = LowonganKerja::findOrFail($id);
-        return view('mahasiswa.lowongankerja.show', compact('lowongan'));
+        $lowongan = Lowongan::findOrFail($id);
+
+        $sudahMelamar = LowonganAplikasi::where('lowongan_id', $id)
+                                        ->where('mahasiswa_id', Auth::id())
+                                        ->exists();
+
+        return view('mahasiswa.lowongankerja.show',
+            compact('lowongan', 'sudahMelamar')
+        );
     }
 
-    // Submit lamaran
+    // Lamar lowongan
     public function lamar(Request $request, $id)
     {
         $request->validate([
@@ -44,29 +66,38 @@ class LowonganKerjaController extends Controller
             'portofolio' => 'nullable|file|max:5120',
         ]);
 
-        $lowongan = LowonganKerja::findOrFail($id);
+        $lowongan = Lowongan::findOrFail($id);
+
+        // Cegah melamar 2x
+        if (
+            LowonganAplikasi::where('lowongan_id', $id)
+                            ->where('mahasiswa_id', Auth::id())
+                            ->exists()
+        ) {
+            return back()->with('error', 'Anda sudah melamar lowongan ini.');
+        }
 
         $cvPath = $request->file('cv')->store('lamaran/cv', 'public');
         $portofolioPath = $request->hasFile('portofolio')
             ? $request->file('portofolio')->store('lamaran/portofolio', 'public')
             : null;
 
-        Lamaran::create([
-            'user_id' => Auth::id(),
-            'lowongan_id' => $lowongan->lowongan_id,
+        LowonganAplikasi::create([
+            'lowongan_id' => $id,
+            'mahasiswa_id' => Auth::id(),
             'cv' => $cvPath,
             'portofolio' => $portofolioPath,
-            'status' => 'pending',
+            'status' => 'diajukan',
         ]);
 
         return redirect()->route('mahasiswa.lowongankerja.index')
-                         ->with('success', 'Lamaran berhasil dikirim!');
+            ->with('success', 'Lamaran berhasil dikirim!');
     }
 
-    // Riwayat lamaran
+    // Riwayat Lamaran
     public function riwayat()
     {
-        $lamarans = Lamaran::where('user_id', Auth::id())
+        $lamarans = LowonganAplikasi::where('mahasiswa_id', Auth::id())
             ->with('lowongan')
             ->orderBy('created_at', 'desc')
             ->get();

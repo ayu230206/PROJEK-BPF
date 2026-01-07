@@ -4,47 +4,67 @@
 
 @section('content')
 
-    <div class="header">
-        <div class="title-section">
-            <h1 class="welcome"><i class="fas fa-eye me-2"></i> Monitoring Aplikasi</h1>
-            <p class="subtle">Aplikasi untuk **{{ $lowongan->judul }}** ({!! $lowongan->getTipeBadge() !!})</p>
+
+    <div
+        class="flex justify-between items-center bg-green-700 p-6 md:p-8 rounded-[18px] text-white shadow-xl shadow-green-700/50 mb-8">
+        <div>
+            <h1 class="text-2xl font-bold flex items-center gap-3">
+                <i class="fas fa-eye me-2"></i> Monitoring Aplikasi
+            </h1>
+            {{-- Menggunakan kelas Tailwind untuk sub-judul --}}
+            <p class="text-sm opacity-85 mt-1">Aplikasi untuk **{{ $lowongan->judul }}** ({!! $lowongan->getTipeBadge() !!})
+            </p>
         </div>
         <div class="controls">
-            <a href="{{ route('bpdpks.lowongan.index') }}" class="btn btn-secondary">
+            {{-- Tombol Kembali diseragamkan --}}
+            <a href="{{ route('bpdpks.lowongan.index') }}" class="px-5 py-3 text-sm font-semibold rounded-xl transition duration-200 ease-in-out 
+                      bg-gray-500 border border-gray-500 hover:bg-gray-600 text-white shadow-lg hover:scale-[1.02]">
                 <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar Lowongan
             </a>
         </div>
     </div>
 
+
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show rounded-xl mb-4" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-    
-    <div class="card-custom mb-4">
-        <h5 class="section-title">Filter Aplikasi</h5>
+
+
+    <div class="bg-white p-6 shadow-xl rounded-2xl border border-gray-100 mb-6">
+        <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2"><i class="fas fa-filter me-2 text-green-700"></i>
+            Filter Aplikasi</h5>
         <form action="{{ route('bpdpks.lowongan.monitoring', $lowongan->id) }}" method="GET" class="row g-3">
             <div class="col-md-4">
-                <label for="status_filter" class="form-label">Status</label>
+                <label for="status_filter" class="form-label font-medium text-gray-700">Status</label>
                 <select class="form-select" id="status_filter" name="status">
                     <option value="semua" {{ request('status') == 'semua' ? 'selected' : '' }}>Semua Status</option>
-                    <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan (Pending)</option>
+                    <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan (Pending)
+                    </option>
                     <option value="diterima" {{ request('status') == 'diterima' ? 'selected' : '' }}>Diterima</option>
                     <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
             </div>
             <div class="col-md-8 d-flex align-items-end">
-                <button type="submit" class="btn btn-info text-white me-2">Terapkan Filter</button>
-                <a href="{{ route('bpdpks.lowongan.monitoring', $lowongan->id) }}" class="btn btn-secondary">Reset</a>
+                {{-- Tombol Filter diubah ke warna hijau konsisten --}}
+                <button type="submit" class="btn btn-primary bg-green-600 hover:bg-green-700 text-white me-2">
+                    <i class="fas fa-search me-1"></i> Terapkan Filter
+                </button>
+                <a href="{{ route('bpdpks.lowongan.monitoring', $lowongan->id) }}"
+                    class="btn btn-secondary bg-gray-500 hover:bg-gray-600 text-white">
+                    <i class="fas fa-redo me-1"></i> Reset
+                </a>
             </div>
         </form>
     </div>
 
 
-    <div class="card-custom">
-        <h5 class="section-title">Daftar Pelamar</h5>
+
+    <div class="bg-white p-6 shadow-xl rounded-2xl border border-gray-100">
+        <h5 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2"><i class="fas fa-users me-2 text-green-700"></i>
+            Daftar Pelamar</h5>
         <div class="table-responsive">
             <table class="table table-hover datatable" id="aplikasiTable">
                 <thead>
@@ -58,32 +78,43 @@
                 </thead>
                 <tbody>
                     @forelse ($aplikasis as $aplikasi)
-                    <tr>
-                        <td>{{ $loop->iteration + ($aplikasis->perPage() * ($aplikasis->currentPage() - 1)) }}</td>
-                        <td>
-                            <strong>{{ $aplikasi->mahasiswa->nama_lengkap ?? 'N/A' }}</strong>
-                            <br><small class="text-muted">ID: {{ $aplikasi->mahasiswa_id }}</small>
-                            <br><small class="text-muted">Kampus: {{ $aplikasi->mahasiswa->asalKampus->nama_kampus ?? '-' }}</small>
-                            {{-- TODO: Tambahkan link ke Detail Mahasiswa jika ada --}}
-                        </td>
-                        <td>
-                            {!! $aplikasi->getStatusBadge() !!}
-                            @if ($aplikasi->catatan_admin)
-                                <br><small class="text-danger" title="Catatan Admin">{{ Str::limit($aplikasi->catatan_admin, 50) }}</small>
-                            @endif
-                        </td>
-                        <td>{{ \Carbon\Carbon::parse($aplikasi->created_at)->format('d M Y H:i') }}</td>
-                        <td>
-                            {{-- Tombol untuk memicu modal proses --}}
-                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#prosesModal" data-aplikasi-id="{{ $aplikasi->id }}" data-mahasiswa-nama="{{ $aplikasi->mahasiswa->nama_lengkap ?? 'Pelamar' }}" data-status-saat-ini="{{ $aplikasi->status }}" data-catatan-admin="{{ $aplikasi->catatan_admin }}">
-                                <i class="fas fa-cogs me-1"></i> Proses
-                            </button>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>{{ $loop->iteration + ($aplikasis->perPage() * ($aplikasis->currentPage() - 1)) }}</td>
+                            <td>
+                                <strong>{{ $aplikasi->mahasiswa->nama_lengkap ?? 'N/A' }}</strong>
+                                <br><small class="text-muted">ID: {{ $aplikasi->mahasiswa_id }}</small>
+                                <br><small class="text-muted">Kampus:
+                                    {{ $aplikasi->mahasiswa->asalKampus->nama_kampus ?? '-' }}</small>
+                            </td>
+                            <td>
+                                {!! $aplikasi->getStatusBadge() !!}
+                                @if ($aplikasi->catatan_admin)
+                                    <br><small class="text-danger"
+                                        title="Catatan Admin">{{ Str::limit($aplikasi->catatan_admin, 50) }}</small>
+                                @endif
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($aplikasi->created_at)->format('d M Y H:i') }}</td>
+                            <td>
+                                {{-- Tombol Detail diubah ke warna info/biru konsisten --}}
+                                <a href="{{ route('bpdpks.lowongan.aplikasi.show', $aplikasi->id) }}"
+                                    class="btn btn-sm text-white bg-blue-500 hover:bg-blue-600 me-1 mb-1">
+                                    <i class="fas fa-file-alt me-1"></i> Detail
+                                </a>
+
+                                {{-- Tombol Proses diubah ke warna primer hijau konsisten --}}
+                                <button type="button" class="btn btn-sm text-white bg-green-600 hover:bg-green-700"
+                                    data-bs-toggle="modal" data-bs-target="#prosesModal" data-aplikasi-id="{{ $aplikasi->id }}"
+                                    data-mahasiswa-nama="{{ $aplikasi->mahasiswa->nama_lengkap ?? 'Pelamar' }}"
+                                    data-status-saat-ini="{{ $aplikasi->status }}"
+                                    data-catatan-admin="{{ $aplikasi->catatan_admin }}">
+                                    <i class="fas fa-cogs me-1"></i> Proses
+                                </button>
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="5" class="text-center">Belum ada mahasiswa yang melamar lowongan ini.</td>
-                    </tr>
+                        <tr>
+                            <td colspan="5" class="text-center">Belum ada mahasiswa yang melamar lowongan ini.</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -93,20 +124,21 @@
         </div>
     </div>
 
-    {{-- Modal Proses Aplikasi --}}
+
     <div class="modal fade" id="prosesModal" tabindex="-1" aria-labelledby="prosesModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form id="formProsesAplikasi" method="POST">
                     @csrf
-                    <div class="modal-header bg-primary text-white">
+                    <div class="modal-header bg-green-700 text-white">
                         <h5 class="modal-title" id="prosesModalLabel">Proses Aplikasi</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <p>Anda akan memproses aplikasi dari mahasiswa: <strong id="mahasiswaNama"></strong></p>
                         <div class="mb-3">
-                            <label for="statusProses" class="form-label">Ubah Status</label>
+                            <label for="statusProses" class="form-label font-medium text-gray-700">Ubah Status</label>
                             <select class="form-select" id="statusProses" name="status" required>
                                 <option value="diajukan">Diajukan (Pending)</option>
                                 <option value="diterima">Diterima</option>
@@ -114,13 +146,18 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="catatanAdmin" class="form-label">Catatan Admin (Opsional)</label>
+                            <label for="catatanAdmin" class="form-label font-medium text-gray-700">Catatan Admin
+                                (Opsional)</label>
                             <textarea class="form-control" id="catatanAdmin" name="catatan_admin" rows="3"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-check me-1"></i> Simpan Status</button>
+                        <button type="button" class="btn btn-secondary bg-gray-500 hover:bg-gray-600 text-white"
+                            data-bs-dismiss="modal">Batal</button>
+                        {{-- Tombol Simpan diubah ke warna hijau konsisten --}}
+                        <button type="submit"
+                            class="btn btn-primary bg-green-600 hover:bg-green-700 border-green-600 text-white"><i
+                                class="fas fa-check me-1"></i> Simpan Status</button>
                     </div>
                 </form>
             </div>
@@ -128,41 +165,29 @@
     </div>
 @endsection
 
+
 @section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var prosesModal = document.getElementById('prosesModal');
-        
-        // Pastikan prosesModal ada sebelum menambahkan listener
-        if (prosesModal) { 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var prosesModal = document.getElementById('prosesModal');
+            if (!prosesModal) return;
+
             prosesModal.addEventListener('show.bs.modal', function (event) {
-                // 1. Ambil data dari tombol pemicu
                 var button = event.relatedTarget;
                 var aplikasiId = button.getAttribute('data-aplikasi-id');
                 var mahasiswaNama = button.getAttribute('data-mahasiswa-nama');
                 var statusSaatIni = button.getAttribute('data-status-saat-ini');
                 var catatanAdmin = button.getAttribute('data-catatan-admin');
 
-                // 2. Ambil elemen di dalam modal
-                var modalTitle = prosesModal.querySelector('#mahasiswaNama');
-                var form = prosesModal.querySelector('#formProsesAplikasi');
-                var statusSelect = prosesModal.querySelector('#statusProses');
-                var catatanTextarea = prosesModal.querySelector('#catatanAdmin');
+                document.getElementById('mahasiswaNama').textContent = mahasiswaNama;
 
-                // 3. Update konten modal
-                modalTitle.textContent = mahasiswaNama;
-                
-                // PERBAIKAN KUTIP BLADE
-                var baseUrl = "{{ url('bpdpks/lowongan/aplikasi') }}"; 
-                form.setAttribute('action', baseUrl + '/' + aplikasiId + '/proses');
+                var baseUrl = "{{ url('bpdpks/lowongan/aplikasi') }}";
+                document.getElementById('formProsesAplikasi')
+                    .setAttribute('action', baseUrl + '/' + aplikasiId + '/proses');
 
-                // 4. Set nilai form saat ini
-                statusSelect.value = statusSaatIni;
-
-                // Pastikan catatanAdmin tidak null
-                catatanTextarea.value = catatanAdmin === 'null' ? '' : catatanAdmin;
+                document.getElementById('statusProses').value = statusSaatIni;
+                document.getElementById('catatanAdmin').value = catatanAdmin === 'null' ? '' : catatanAdmin;
             });
-        }
-    });
-</script>
+        });
+    </script>
 @endsection

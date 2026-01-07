@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Bpdpks;
 
 use App\Http\Controllers\Controller;
-use App\Models\Bpdpks\Kampus; 
+use App\Models\Bpdpks\Kampus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +21,7 @@ class KampusKerjasamaController extends Controller
             $search = '%' . $request->search . '%';
             $query->where(function ($q) use ($search) {
                 $q->where('nama_kampus', 'like', $search)
-                  ->orWhere('kode_kampus', 'like', $search);
+                    ->orWhere('kode_kampus', 'like', $search);
             });
         }
 
@@ -33,7 +33,7 @@ class KampusKerjasamaController extends Controller
         }
 
         // Ambil data dengan pagination
-        $dataKampus = $query->latest()->paginate(10); 
+        $dataKampus = $query->latest()->paginate(10);
 
         return view('bpdpks.kerjasama.index', compact('dataKampus'));
     }
@@ -67,7 +67,7 @@ class KampusKerjasamaController extends Controller
         $dataToCreate = array_merge($validatedData, [
             'status_kerjasama' => $statusKerjasama,
         ]);
-        
+
         // Hapus status_aktif dari array karena kolom tersebut tidak ada di DB
         unset($dataToCreate['status_aktif']);
 
@@ -113,7 +113,7 @@ class KampusKerjasamaController extends Controller
             'nomor_mou' => $validatedData['nomor_mou'],
             'tanggal_mou' => $validatedData['tanggal_mou'],
             // Menggunakan kolom DB yang benar (status_kerjasama)
-            'status_kerjasama' => $statusKerjasama, 
+            'status_kerjasama' => $statusKerjasama,
         ];
 
         // Update data
